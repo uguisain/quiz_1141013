@@ -160,14 +160,14 @@ public class QuizService {
 		}
 		/* 檢查quiz_id和QuestionVo中的quiz_id是否一樣 */
 		for(QuestionVo vo: req.getQuestionVoList()) {
-			if(vo.getQuizId() != req.getQuizId()) {
+			if(vo.getQuizId() != req.getId()) {
 				return new BasicRes(ResMessage.QUIZ_ID_ERROR.getCode(), //
 						ResMessage.QUIZ_ID_ERROR.getMessage());
 			}
 		}
 		
 		// 更新quiz
-		int updateRes = quizDao.update(req.getQuizId(), req.getTitle(), req.getDescription(), //
+		int updateRes = quizDao.update(req.getId(), req.getTitle(), req.getDescription(), //
 				req.getStartDate(), req.getEndDate(), req.isPublished());
 		/* 有找到quizID並更新成功，即使更新的資料與DB中的一樣，都會回傳1(where條件帶的是PK) */
 		if(updateRes != 1) {
@@ -175,7 +175,7 @@ public class QuizService {
 		}
 		
 		/* 確定quiz存在，就先刪問題、再新增問題 */
-		questionDao.deleteByQuizId(req.getQuizId());
+		questionDao.deleteByQuizId(req.getId());
 		for (QuestionVo vo : req.getQuestionVoList()) {
 			/* 要把 VO 中的List<Options>轉換成字串 */
 			try {

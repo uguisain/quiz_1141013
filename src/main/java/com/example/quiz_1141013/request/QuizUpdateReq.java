@@ -8,14 +8,14 @@ public class QuizUpdateReq extends QuizCreateReq {
 
 	// 因為是更新已存在的quiz，因此quizId至少是1
 	@Min(value = 1, message = ValiMsg.QUIZ_ID_ERROR)
-	private int quizId;
+	private int id;
 
-	public int getQuizId() {
-		return quizId;
+	public int getId() {
+		return id;
 	}
 
-	public void setQuizId(int quizId) {
-		this.quizId = quizId;
+	public void setId(int id) {
+		this.id = id;
 	}
 
 }
