@@ -8,7 +8,9 @@ public enum ResMessage {
 	OPTIONS_SIZE_ERROR(400, "Option size error!"), //
 	QUIZ_ID_ERROR(400, "Quiz_id error!"), //
 	QUIZ_NOT_FOUND(404, "Quiz not found!"), //
-	QWESTION_NOT_FOUND(404, "Question not found!"), //
+	QUESTION_NOT_FOUND(404, "Question not found!"), //
+	OPTION_NAME_MISMATCH(400, "OPTION NAME MISMATCH!"), //
+	ANSWER_REQUIRED(400, "ANSWER REQUIRED!"), //
 	PLEASE_LOGIN_FRIST(400, "請先登入!") //
 	;
 

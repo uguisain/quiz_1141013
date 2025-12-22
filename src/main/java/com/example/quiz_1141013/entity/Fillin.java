@@ -25,7 +25,7 @@ public class Fillin {
 	@Column(name = "email")
 	private String email;
 
-	// LIst<AnswerVo> 的物件轉成的字串: 會用List是因為可能會有多選
+	// List<AnswerVo> 的物件轉成的字串: 會用List是因為可能會有多選
 	@Column(name = "answer")
 	private String answer;
 

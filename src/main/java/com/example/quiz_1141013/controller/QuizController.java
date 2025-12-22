@@ -33,17 +33,18 @@ public class QuizController {
 	public BasicRes create(@Valid @RequestBody QuizCreateReq req) throws Exception {
 		return quizService.create(req);
 	}
-	
+
 	@PostMapping("quiz/update")
 	public BasicRes update(@Valid @RequestBody QuizUpdateReq req) throws Exception {
 		return quizService.update(req);
 	}
-	
+
 	// 首頁清單
 	@GetMapping("quiz/get_all")
 	public GetListRes getAll() {
 		return quizService.getAll();
 	}
+
 	// 首頁清單(課堂版)
 	@GetMapping("quiz/get_fillter_data")
 	public GetListRes getAll(@RequestParam("keyWord") String keyWord, //
@@ -51,24 +52,23 @@ public class QuizController {
 			@RequestParam("endDate") LocalDate endDate) {
 		return quizService.getAll(keyWord, StartDate, endDate);
 	}
-	
+
 	// 表單用問卷資訊
 	@GetMapping("quiz/get_quiz/{id}")
 	public GetListRes getQuiz(@PathVariable("id") int id) {
 		return quizService.getQuiz(id);
 	}
-	
+
 	// 表單用問題
 	@GetMapping("quiz/get_question/{id}")
 	public GetQuestionRes getQuestion(@PathVariable("id") int id) {
 		return quizService.getQuestion(id);
 	}
-	
+
 	// 課堂(quiz/get_question2?quizId=1)
 	@GetMapping("quiz/get_question2")
 	public GetQuestionRes2 getQuestionById(@RequestParam("quizId") int quizId) throws Exception {
 		return quizService.getQuestionById(quizId);
 	}
-	
 
 }

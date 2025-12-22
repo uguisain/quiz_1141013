@@ -3,19 +3,24 @@ package com.example.quiz_1141013.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import com.example.quiz_1141013.Dao.FillinDao;
 import com.example.quiz_1141013.Dao.QuestionDao;
 import com.example.quiz_1141013.constants.ResMessage;
+import com.example.quiz_1141013.constants.Type;
 import com.example.quiz_1141013.entity.Question;
 import com.example.quiz_1141013.request.FillinReq;
 import com.example.quiz_1141013.response.BasicRes;
 import com.example.quiz_1141013.vo.AnswerVo;
+import com.example.quiz_1141013.vo.Answers;
 import com.example.quiz_1141013.vo.Options;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -33,37 +38,70 @@ public class FillinService {
 	@Autowired
 	private QuestionDao questionDao;
 
+	/* rollbackFor = Exception.class: 表示只要此方法發生了 Exception，寫一半的資料都會回溯 */
+	@Transactional(rollbackFor = Exception.class)
 	public BasicRes fillin(FillinReq req) throws Exception {
-		// TODO 使用email取得user資料
-		/* 使用quizId取得所有問題 */
+		// TODO 使用 email 取得 User 資料
+		/* 使用 quizId 取得所有問題 */
 		List<Question> questionList = questionDao.getByQuizId(req.getQuizId());
-		// CollectionUtils.isEmpty 檢查List是否為null
+		/* CollectionUtils.isEmpty(): 有檢查 list 是否為 null */
 		if (CollectionUtils.isEmpty(questionList)) {
-			return new BasicRes(ResMessage.QWESTION_NOT_FOUND.getCode(), //
-					ResMessage.QWESTION_NOT_FOUND.getMessage());
+			return new BasicRes(ResMessage.QUESTION_NOT_FOUND.getCode(), //
+					ResMessage.QUESTION_NOT_FOUND.getMessage());
 		}
-		// Map<問題編號, 所有選項編號和選項>
-		Map<Integer, List<Options>> questionMap = new HashMap<>();
-		for (Question item : questionList) {
-			/* 把字串 option 轉成物件 Options */
+		/* 把 answersList 轉成 Map<QuestionId, List<AnswerVo>> */
+		Map<Integer, List<AnswerVo>> quesIdAnsMap = new HashMap<>();
+		for (Answers item : req.getAnswers()) {
+			quesIdAnsMap.put(item.getQuestionId(), item.getAnswerVoList());
+		}
+		for (Question question : questionList) {
+			List<AnswerVo> voList = quesIdAnsMap.get(question.getQuestionId());
+			/* 必填但沒答案或選項 */
+			if (question.isRequired() && CollectionUtils.isEmpty(voList)) {
+				return new BasicRes(ResMessage.ANSWER_REQUIRED.getCode(), //
+						ResMessage.ANSWER_REQUIRED.getMessage());
+			}
+			/* 跳過簡答題 */
+			if (question.getType().equals(Type.TEXT.getType())) {
+				continue;
+			}
+			/* 把 字串 options 轉成物件 Options */
 			try {
-				List<Options> opList = mapper.readValue(item.getOptions(), new TypeReference<>() {
+				List<Options> opList = mapper.readValue(question.getOptions(), new TypeReference<>() {
 				});
-				/* 把 問題編號 和 List<Options> 放入 Map */
-				questionMap.put(item.getQuestionId(), opList);
+
+				boolean isMatch = voList != null && voList.stream().allMatch(vo -> isSameOption.test(vo, opList));
+				if (!isMatch) {
+					return new BasicRes(ResMessage.OPTION_NAME_MISMATCH.getCode(), //
+							ResMessage.OPTION_NAME_MISMATCH.getMessage());
+				}
 			} catch (Exception e) {
 				throw e;
 			}
 		}
-		/* 比對選項看答案是否一樣 */
-		List<AnswerVo> answerVoList = req.getAnswerVoList();
-		for(AnswerVo vo: answerVoList) {
-			
+		/* 寫資料 */
+		for(int questionId: quesIdAnsMap.keySet()) {
+			try {
+				fillinDao.insert(req.getQuizId(), questionId, req.getEmail(), //
+						mapper.writeValueAsString(quesIdAnsMap.get(questionId)));
+			} catch (Exception e) {
+				throw e;
+			}
 		}
-		
-		
-
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
+
+	private BiPredicate<AnswerVo, List<Options>> isSameOption = (ans, opList) -> {
+		if (ans == null || CollectionUtils.isEmpty(opList)) {
+			return false;
+		}
+		/* 比對選項編號一樣時，選項是否一樣 */
+		for (Options op : opList) {
+			if (ans.getCode() == op.getCode() && ans.getOptionName().equals(op.getOptionName())) {
+				return false;
+			}
+		}
+		return true;
+	};
 
 }
