@@ -1,6 +1,7 @@
 package com.example.quiz_1141013.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +18,7 @@ public class FillinController {
 	private FillinService fillinService;
 
 	// 寫入答案
+	@PostMapping("quiz/fillin")
 	public BasicRes fillin(@Valid @RequestBody FillinReq req) throws Exception {
 		return fillinService.fillin(req);
 	}
