@@ -115,8 +115,10 @@ public class FeedbackService {
 						? new HashMap<>()
 						: map.get(item.getQuestionId());
 				voList.forEach(vo -> {
-					/* 第一筆資料時，codeCountMap 使用code當key取出對應的value肯定是null，因為沒資料
-					 * 會 null 的原因是 codeCountMap 的資料型態是 Integer */
+					/*
+					 * 第一筆資料時，codeCountMap 使用code當key取出對應的value肯定是null，因為沒資料 會 null 的原因是
+					 * codeCountMap 的資料型態是 Integer
+					 */
 					String str = String.valueOf(vo.getCode() + "-" + vo.getOptionName());
 					int count = codeCountMap.get(str) == null ? 0 : codeCountMap.get(str);
 					if (vo.isCheck()) {
@@ -131,58 +133,73 @@ public class FeedbackService {
 		}
 		/* 把 map List<Statistics> */
 		List<Statistics> list = new ArrayList<>();
-		map.forEach((k,v) -> {
+		map.forEach((k, v) -> {
 			/* v 就是 Map<code-optioName, count>> */
 			List<OptionsCount> opCountList = new ArrayList<>();
 			v.forEach((k1, v1) -> {
-				/* array = [code, optioName]*/
+				/* array = [code, optioName] */
 				String[] array = k1.split("-");
-				/*array[0] 是選項編號(code)，要把其資料型態轉回 int */
+				/* array[0] 是選項編號(code)，要把其資料型態轉回 int */
 				OptionsCount opCount = new OptionsCount(Integer.valueOf(array[0]), array[1], v1);
 				opCountList.add(opCount);
 			});
 			Statistics st = new Statistics(k, opCountList);
 			list.add(st);
 		});
-		
+
 		return new StatisticsRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage(), list);
 	}
 
 	// 統計(test)
 	public StatisticsRes statistics_test(int quizId) throws Exception {
-		/* res包含了多位使用者(email)的填答 */
+		/* res 包含了多位使用者(email)的填答 */
 		List<Fillin> res = fillinDao.getByQuizId(quizId);
+		/* Map<questionId, List<OptionsCount>> */
 		Map<Integer, List<OptionsCount>> map = new HashMap<>();
 		for (Fillin item : res) {
 			try {
 				/*
-				 * 把字串 answer 轉換成物件 List<AnswerVo> 這邊一個 List<AnswerVo> 只包含一個問題的所有編號和選項
+				 * 把字串 answer 轉換成物件 List<AnswerVo> 這邊一個 List<AnswerVo> 只包含了一個問題的 所有編號-選項
 				 */
 				List<AnswerVo> voList = mapper.readValue(item.getAnswer(), new TypeReference<>() {
 				});
-				/* 把 voList 轉成 List<OptionsCount> */
+				/* voList 轉成 List<OptionsCount> */
 				List<OptionsCount> opCountList = CollectionUtils.isEmpty(map.get(item.getQuestionId()))
 						? new ArrayList<>()
 						: map.get(item.getQuestionId());
-				/*
-				 * voList.forEach 遍歷後，opCountList裡面會是同一個QuestionId下，
-				 * 所有的code-optionName以及是否有選(0:沒有;1:有選)的結果。 就是 1.紅茶 count=0, 2.綠茶 count=1, 3.烏龍茶
-				 * count=0, 4.奶茶 count=0 這4筆 OptionsCount 資料 所以當有第2位填答者的答案時，opCountList
-				 * 的資料就會是第一位填答著的4筆再加上新的4筆總共8筆資料
-				 */
 				voList.forEach(vo -> {
-					OptionsCount opCount = new OptionsCount(vo.getCode(), vo.getOptionName(), vo.isCheck() ? 1 : 0);
-					opCountList.add(opCount);
+					/* 有選 */
+					if (vo.isCheck()) {
+						/*
+						 * 第一筆資料 --> opCountList 是空的，不用 CollectionUtilsE.isEmpty() 判斷是因為前面已經把其設定為 new
+						 * ArrayList<>()， 要使用也可以
+						 */
+						if (opCountList.isEmpty()) {
+							/* 因為是第一筆資料，所以有選的次數直接變成1 */
+							opCountList.add(new OptionsCount(vo.getCode(), vo.getOptionName(), 1));
+						} else {
+							/* 遍歷並比對相同編號 */
+							opCountList.forEach(op -> {
+								/* 比對相同編號 --> 取出 op 中的次數 --> +1 --> set 回去 */
+								if (op.getCode() == vo.getCode()) {
+									op.setCode(op.getCount() + 1);
+								}
+							});
+						}
+					}
 				});
 				map.put(item.getQuestionId(), opCountList);
 			} catch (Exception e) {
 				throw e;
 			}
-
 		}
-
-		return null;
+		/* 把 map 轉成 List<Statistics> */
+		List<Statistics> list = new ArrayList<>();
+		map.forEach((k, v) -> {
+			list.add(new Statistics(k, v));
+		});
+		return new StatisticsRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(), list);
 	}
 
 }

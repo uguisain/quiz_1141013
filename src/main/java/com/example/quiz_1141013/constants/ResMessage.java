@@ -11,6 +11,8 @@ public enum ResMessage {
 	QUESTION_NOT_FOUND(404, "Question not found!"), //
 	OPTION_NAME_MISMATCH(400, "OPTION NAME MISMATCH!"), //
 	ANSWER_REQUIRED(400, "ANSWER REQUIRED!"), //
+	USER_NOT_FOUND(404, "未找到用戶!"), //
+	PASSWORD_ERROR(400, "密碼錯誤!"), //
 	PLEASE_LOGIN_FRIST(400, "請先登入!") //
 	;
 
