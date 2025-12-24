@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import com.example.quiz_1141013.entity.Fillin;
 import com.example.quiz_1141013.entity.FillinId;
+import com.example.quiz_1141013.response.AnsweredQuizRes;
 
 import jakarta.transaction.Transactional;
 
@@ -23,5 +24,9 @@ public interface FillinDao extends JpaRepository<Fillin, FillinId> {
 
 	@Query(value = "select * from fillin where quiz_id = ?", nativeQuery = true)
 	public List<Fillin> getByQuizId(int quizId);
-
+	
+	// 用email取得填寫過的quizId(不重複)
+	@Query(value = "select distinct quiz_id from fillin where email = ?1;", nativeQuery = true)
+	public List<Integer> getQuizIdByEmail(String email);
+	
 }

@@ -1,5 +1,6 @@
 package com.example.quiz_1141013.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import com.example.quiz_1141013.constants.ResMessage;
 import com.example.quiz_1141013.constants.Type;
 import com.example.quiz_1141013.entity.Question;
 import com.example.quiz_1141013.request.FillinReq;
+import com.example.quiz_1141013.response.AnsweredQuizRes;
 import com.example.quiz_1141013.response.BasicRes;
 import com.example.quiz_1141013.vo.AnswerVo;
 import com.example.quiz_1141013.vo.Answers;
@@ -80,7 +82,7 @@ public class FillinService {
 			}
 		}
 		/* 寫資料 */
-		for(int questionId: quesIdAnsMap.keySet()) {
+		for (int questionId : quesIdAnsMap.keySet()) {
 			try {
 				fillinDao.insert(req.getQuizId(), questionId, req.getEmail(), //
 						mapper.writeValueAsString(quesIdAnsMap.get(questionId)));
@@ -103,5 +105,13 @@ public class FillinService {
 		}
 		return true;
 	};
+
+	// 取得填寫過的 quizId
+	public AnsweredQuizRes getAnswered(String email) {
+		List<Integer> quizIdList = fillinDao.getQuizIdByEmail(email);
+		
+		return new AnsweredQuizRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(), //
+				quizIdList);
+	}
 
 }

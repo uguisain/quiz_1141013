@@ -200,5 +200,16 @@ public class QuizService {
 		return new GetListRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(), //
 				quizDao.getAll(keyWord, StartDate, endDate));
 	}
+	
+	// 刪除表單
+	/* rollbackFor = Exception.class: 表示只要此方法發生了 Exception，寫一半的資料都會回溯 */
+	@Transactional(rollbackFor = Exception.class)
+	public BasicRes deleteQuiz(int id) {
+		questionDao.deleteByQuizId(id);
+		quizDao.deleteById(id);
+		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
+	}
+	
+	
 
 }

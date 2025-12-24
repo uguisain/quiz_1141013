@@ -44,7 +44,13 @@ public interface QuizDao extends JpaRepository<Quiz, Integer> {
 	public List<Quiz> getAll(String keyWord, LocalDate StartDate, LocalDate endDate);
 
 	// 用Id抓特定問卷資訊
-	@Query(value = "select * from quiz where id = ?", nativeQuery = true)
+	@Query(value = "select * from quiz where id = ?1", nativeQuery = true)
 	public List<Quiz> getQuiz(int id);
+	
+	// 用Id刪除問卷
+	@Modifying
+	@Transactional
+	@Query(value = "delete from quiz where id = ?1", nativeQuery = true)
+	public void deleteById(int id);
 
 }
