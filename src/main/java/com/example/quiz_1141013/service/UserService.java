@@ -12,6 +12,7 @@ import com.example.quiz_1141013.entity.User;
 import com.example.quiz_1141013.request.LoginReq;
 import com.example.quiz_1141013.response.BasicRes;
 import com.example.quiz_1141013.response.LoginRes;
+import com.example.quiz_1141013.response.UserUpdateRes;
 
 @Service
 public class UserService {
@@ -27,7 +28,7 @@ public class UserService {
 	}
 
 	// 更新用戶資料
-	public BasicRes updateInfo(User info) {
+	public UserUpdateRes updateInfo(User info) {
 		String name = info.getName();
 		if (StringUtils.hasText(name)) {
 			name = null;
@@ -41,7 +42,8 @@ public class UserService {
 			age = 0;
 		}
 		userDao.updataInfo(name, phone, age, info.getEmail());
-		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
+		return new UserUpdateRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(), //
+				info.getName(), info.getEmail(), info.getPhone(), info.getAge());
 	}
 
 	// 登入功能
